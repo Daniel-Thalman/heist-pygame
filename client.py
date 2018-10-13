@@ -1,5 +1,5 @@
 import socket
-
+#this file is nolonger neccessary but was used for testing
 
 # TCP_IP = 'jamulan.com'
 # TCP_PORT = 5005
