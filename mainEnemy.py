@@ -2,8 +2,8 @@ import pygame
 import socket
 
 # UDP connection setup
-UDP_IP_send = input("Enter your opponents ip address:")
-UDP_IP_recv = "127.0.0.1"
+UDP_IP_send = "172.17.59.194"
+UDP_IP_recv = "jamulan.com"
 UDP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # Internet
