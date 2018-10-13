@@ -17,7 +17,6 @@ red = (255,0,0)
 
 clock = pygame.time.Clock()
 quited = False
-crashed = False
 carImg = pygame.image.load('racecar.png')
 
 def car(x,y):
@@ -60,25 +59,29 @@ blockSpeed = 3.0
 speedDelta = 0.1
 blockX = blockStartx
 blockY = blockStarty
-blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, red, 0.0]
+blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, red]
 blocks = [blockDefault]
 
 def updateBlock(block):
     if ((block[3] > x and block[3] < x + carWidth) or (block[3] + blockWidth > x and block[3] + block[1] < x + carWidth)) and ((block[4] + block[2]) >= y):
-        crashed = True
+        crashed()
     elif block[4] < display_height + (block[2]/2):
         block[4] += block[0]
     elif block[4] >= display_height + block[2]/2:
         block[3] = random.randint(0, display_width - block[1])
         block[4] = 0
         block[0] += speedDelta
-        block[6] += 1
+
+def crashed():
+	message_display("GAME OVER")
+	pygame.quit()
+	quit()
 
 while not quited:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             quited = True
-    
+
     if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_LEFT and x > 0:
             x += -1 * dx
@@ -87,17 +90,11 @@ while not quited:
 
     gameDisplay.fill(black)
     car(x,y)
-    
-    score = 0.0
+
     for block in blocks:
         updateBlock(block)
-        score += block[6]
-        scoreDisplay(score)
         drawBlock(block)
 
-    if crashed == True:
-        message_display("GAME OVER")
-        break
     pygame.display.update()
     clock.tick(60)
 
