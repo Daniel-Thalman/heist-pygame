@@ -1,6 +1,16 @@
 #!/bin/py
 import random
 import pygame
+import socket
+
+# UDP Connoction setup
+UDP_IP = "jamulan.com"
+UDP_PORT = 5005
+
+sock = socket.socket(socket.AF_INET, # Internet
+				 socket.SOCK_DGRAM) # UDP
+sock.bind((UDP_IP, UDP_PORT))
+######
 
 pygame.init()
 
@@ -63,14 +73,15 @@ blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, red]
 blocks = [blockDefault]
 
 def updateBlock(block):
-    if ((block[3] > x and block[3] < x + carWidth) or (block[3] + blockWidth > x and block[3] + block[1] < x + carWidth)) and ((block[4] + block[2]) >= y):
-        crashed()
-    elif block[4] < display_height + (block[2]/2):
-        block[4] += block[0]
-    elif block[4] >= display_height + block[2]/2:
-        block[3] = random.randint(0, display_width - block[1])
-        block[4] = 0
-        block[0] += speedDelta
+	if ((block[3] > x and block[3] < x + carWidth) or (block[3] + blockWidth > x and block[3] + block[1] < x + carWidth)) and ((block[4] + block[2]) >= y):
+		crashed()
+	elif block[4] < display_height + (block[2]/2):
+		block[4] += block[0]
+	elif block[4] >= display_height + block[2]/2:
+		block[3] = blockStartx
+# 		block[3] = random.randint(0, display_width - block[1])
+		block[4] = 0
+		block[0] += speedDelta
 
 def crashed():
 	message_display("GAME OVER")
@@ -78,25 +89,29 @@ def crashed():
 	quit()
 
 while not quited:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            quited = True
 
-    if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_LEFT and x > 0:
-            x += -1 * dx
-        elif event.key == pygame.K_RIGHT and x < (display_width - carWidth):
-            x += dx
+	data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+	blockStartx = int(data.decode())
 
-    gameDisplay.fill(black)
-    car(x,y)
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			quited = True
 
-    for block in blocks:
-        updateBlock(block)
-        drawBlock(block)
+	if event.type == pygame.KEYDOWN:
+		if event.key == pygame.K_LEFT and x > 0:
+			x += -1 * dx
+		elif event.key == pygame.K_RIGHT and x < (display_width - carWidth):
+			x += dx
 
-    pygame.display.update()
-    clock.tick(60)
+	gameDisplay.fill(black)
+	car(x,y)
+
+	for block in blocks:
+		updateBlock(block)
+		drawBlock(block)
+
+	pygame.display.update()
+	clock.tick(60)
 
 pygame.quit()
 quit()
