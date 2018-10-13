@@ -2,13 +2,13 @@ import pygame
 import socket
 
 # UDP connection setup
-UDP_IP = "jamulan.com"
-UDP_PORT_send = 5006
-UDP_PORT_recive = 5005
+UDP_IP_send = input("Enter your opponents ip address:")
+UDP_IP_recv = "127.0.0.1"
+UDP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
-sock.bind((UDP_IP, UDP_PORT_recive))
+sock.bind((UDP_IP_recv, UDP_PORT))
 #####
 
 pygame.init()
@@ -87,7 +87,7 @@ while not quited:
 			blocks[0][3] += dx
 
 	dataToSend = str(blocks[0][3])
-	sock.sendto(str.encode(dataToSend), (UDP_IP, UDP_PORT_send)) # 200 in a placeholder for blackStartx
+	sock.sendto(str.encode(dataToSend), (UDP_IP_send, UDP_PORT)) # 200 in a placeholder for blackStartx
 	data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
 	dataRecived = data.decode()
 	dataOut = dataRecived.split(',')

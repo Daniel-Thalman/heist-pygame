@@ -4,13 +4,13 @@ import pygame
 import socket
 
 # UDP Connoction setup
-UDP_IP = "jamulan.com"
-UDP_PORT_send = 5005
-UDP_PORT_recive = 5006
+UDP_IP_send = input("Enter your opponents ip address:")
+UDP_IP_recv = "127.0.0.1"
+UDP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # Internet
 				 socket.SOCK_DGRAM) # UDP
-sock.bind((UDP_IP, UDP_PORT_recive))
+sock.bind((UDP_IP_recv, UDP_PORT))
 ######
 
 pygame.init()
@@ -77,7 +77,7 @@ blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 0]
 blocks = [blockDefault]
 
 def updateBlock(block):
-	if ((block[3] > x and block[3] < x + carWidth) or (block[3] + blockWidth > x and block[3] + block[1] < x + carWidth)) and ((block[4] + block[2]) >= y):
+	if ((x > block[3] and x < block[3] + block[1]) or (x + carWidth > block[3] and x + carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= y):
 		crashed()
 	elif block[4] < display_height + (block[2]/2):
 		block[4] += block[0]
@@ -109,7 +109,7 @@ while not quited:
 		for atribute in block:
 			dataToSend += ("," + str(atribute))
 
-	sock.sendto(str.encode(dataToSend), (UDP_IP, UDP_PORT_send))
+	sock.sendto(str.encode(dataToSend), (UDP_IP_send, UDP_PORT))
 	data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
 	blockStartx = float(data.decode())
 
