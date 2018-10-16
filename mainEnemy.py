@@ -2,8 +2,8 @@ import pygame
 import socket
 
 # UDP connection setup
-UDP_IP_send = "172.17.59.194"
-UDP_IP_recv = "jamulan.com"
+UDP_IP_recv = "172.17.59.194"
+UDP_IP_send = "jamulan.com"
 UDP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # Internet
@@ -63,7 +63,7 @@ def thing(thingx, thingy, thingw, thingh, color):
 def drawBlock(block):
     thing(block[3], block[4], block[1], block[2], colors[ int(block[5]) ] )
 
-blockStartx = display_width/2
+blockStartx = float(display_width/2)
 blockStarty = 0
 blockWidth = 100
 blockHeight = 100
@@ -81,14 +81,14 @@ while not quited:
 			quited = True
 
 	if event.type == pygame.KEYDOWN:
-		if event.key == pygame.K_LEFT and x > 0:
+		if event.key == pygame.K_LEFT and block[3] > 0:
 			blocks[0][3] += -1 * dx
-		elif event.key == pygame.K_RIGHT and x < (display_width - blocks[0][2]):
+		elif event.key == pygame.K_RIGHT and block[3] < (display_width - blocks[0][1]):
 			blocks[0][3] += dx
 
 	dataToSend = str(blocks[0][3])
-	sock.sendto(str.encode(dataToSend), (UDP_IP_send, UDP_PORT)) # 200 in a placeholder for blackStartx
 	data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+	sock.sendto(str.encode(dataToSend), (UDP_IP_send, UDP_PORT)) # 200 in a placeholder for blackStartx
 	dataRecived = data.decode()
 	dataOut = dataRecived.split(',')
 	x = float(dataOut[0])

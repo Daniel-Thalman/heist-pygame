@@ -27,4 +27,4 @@ sock = socket.socket(socket.AF_INET, # Internet
 # sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
 
 while 1:
-	sock.sendto(str.encode('200'), (UDP_IP, UDP_PORT))
+	sock.sendto(str.encode(str(float(200))), (UDP_IP, UDP_PORT))
