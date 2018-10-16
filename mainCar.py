@@ -69,8 +69,8 @@ blockStartx = display_width/2
 blockStarty = 0
 blockWidth = 100
 blockHeight = 100
-blockSpeed = 3.0
-speedDelta = 0.1
+blockSpeed = 10.0
+speedDelta = 1.0
 blockX = blockStartx
 blockY = blockStarty
 blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 0]
@@ -78,6 +78,7 @@ blocks = [blockDefault]
 
 def updateBlock(block):
 	if ((x > block[3] and x < block[3] + block[1]) or (x + carWidth > block[3] and x + carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= y):
+		print("blocks dodged: %f" % (block[0] - blockSpeed))
 		crashed()
 	elif block[4] < display_height + (block[2]/2):
 		block[4] += block[0]
@@ -86,9 +87,8 @@ def updateBlock(block):
 # 		block[3] = random.randint(0, display_width - block[1])
 		block[4] = 0
 		block[0] += speedDelta
-
 def crashed():
-	message_display("GAME OVER")
+	sock.sendto(str.encode("GAME OVER"), (UDP_IP_send, UDP_PORT))
 	pygame.quit()
 	quit()
 
