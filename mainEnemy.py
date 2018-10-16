@@ -1,16 +1,14 @@
 import pygame
 import socket
 
-# UDP connection setup
-UDP_IP_recv = "172.17.59.194"
-UDP_IP_send = "jamulan.com"
-UDP_PORT = 5005
+# TCP connection setup
+TCP_IP = "jamulan.com"
+TCP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # Internet
-                     socket.SOCK_DGRAM) # UDP
-sock.bind((UDP_IP_recv, UDP_PORT))
+                     socket.SOCK_STREAM) # TCP
+sock.connect((TCP_IP, TCP_PORT))
 #####
-
 pygame.init()
 
 display_width = 800
@@ -88,14 +86,14 @@ while not quited:
 			blocks[0][3] += dx
 	
 	dataToSend = str(blocks[0][3])
-	data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-	sock.sendto(str.encode(dataToSend), (UDP_IP_send, UDP_PORT))
+	data = sock.recv(64) # buffer size is 1024 bytes
+	sock.send(str.encode(dataToSend + ","))
 	dataRecived = data.decode()
 	dataOut = dataRecived.split(',')
 	x = float(dataOut[0])
 	y = float(dataOut[1])
 	tmp = []
-	for i in range(2,8):
+	for i in range(2,len(dataOut)):
 		tmp.append(float(dataOut[i]))
 
 	try:
@@ -110,4 +108,8 @@ while not quited:
 		drawBlock(block)
 
 	pygame.display.update()
-	clock.tick(60)
+	clock.tick(30)
+
+sock.close()
+pygome.quit()
+quit()

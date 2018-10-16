@@ -3,15 +3,18 @@ import random
 import pygame
 import socket
 
-# UDP Connoction setup
-UDP_IP_send = "172.17.59.194"
-UDP_IP_recv = "jamulan.com"
-UDP_PORT = 5005
+# TCP Connoction setup
+TCP_IP = "jamulan.com"
+TCP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # Internet
-				 socket.SOCK_DGRAM) # UDP
-sock.bind((UDP_IP_recv, UDP_PORT))
+				 socket.SOCK_STREAM) # TCP
+sock.bind((TCP_IP, TCP_PORT))
+sock.listen(1)
 ######
+input("Press any key when the oppenet is ready")
+
+conn, addr = sock.accept()
 
 pygame.init()
 
@@ -83,15 +86,19 @@ def updateBlock(block):
 	elif block[4] < display_height + (block[2]/2):
 		block[4] += block[0]
 	elif block[4] >= display_height + block[2]/2:
-		block[3] = blockStartx
+		print("blocks dodged: %f" % (block[0] - blockSpeed))
+		recv = conn.recv(64).decode()[:-1]
+		recvOut = recv.split(',')[-1]
+		block[3] = float(recvOut)
 # 		block[3] = random.randint(0, display_width - block[1])
 		block[4] = 0
 		block[0] += speedDelta
 def crashed():
-	sock.sendto(str.encode("GAME OVER"), (UDP_IP_send, UDP_PORT))
+	conn.send(str.encode("GAME OVER"))
+	conn.close()
 	pygame.quit()
 	quit()
-
+	
 while not quited:
 
 	for event in pygame.event.get():
@@ -103,15 +110,14 @@ while not quited:
 			x += -1 * dx
 		elif event.key == pygame.K_RIGHT and x < (display_width - carWidth):
 			x += dx
-
 	dataToSend = str(x) + "," + str(y)
 	for block in blocks:
 		for atribute in block:
 			dataToSend += ("," + str(atribute))
-
-	sock.sendto(str.encode(dataToSend), (UDP_IP_send, UDP_PORT))
-	data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-	blockStartx = float(data.decode())
+	conn.send(str.encode(dataToSend))
+#	data = conn.recv(64) # buffer size is 1024 bytes
+#	dataOut = data.decode().split(',')
+#	blockStartx = float(data[0])
 
 	gameDisplay.fill(black)
 	car(x,y)
@@ -121,7 +127,8 @@ while not quited:
 		drawBlock(block)
 
 	pygame.display.update()
-	clock.tick(60)
+	clock.tick(30)
 
 pygame.quit()
 quit()
+conn.close()
