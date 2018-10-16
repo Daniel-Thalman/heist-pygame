@@ -81,14 +81,15 @@ while not quited:
 			quited = True
 
 	if event.type == pygame.KEYDOWN:
-		if event.key == pygame.K_LEFT and block[3] > 0:
+		tmpX = int(blocks[0][3])
+		if event.key == pygame.K_LEFT and tmpX > 0:
 			blocks[0][3] += -1 * dx
-		elif event.key == pygame.K_RIGHT and block[3] < (display_width - blocks[0][1]):
+		elif event.key == pygame.K_RIGHT and tmpX < (display_width - blocks[0][2]):
 			blocks[0][3] += dx
-
+	
 	dataToSend = str(blocks[0][3])
 	data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-	sock.sendto(str.encode(dataToSend), (UDP_IP_send, UDP_PORT)) # 200 in a placeholder for blackStartx
+	sock.sendto(str.encode(dataToSend), (UDP_IP_send, UDP_PORT))
 	dataRecived = data.decode()
 	dataOut = dataRecived.split(',')
 	x = float(dataOut[0])
