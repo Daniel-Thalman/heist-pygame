@@ -85,22 +85,23 @@ while not quited:
 		elif event.key == pygame.K_RIGHT and tmpX < (display_width - blocks[0][2]):
 			blocks[0][3] += dx
 	
-	dataToSend = str(blocks[0][3])
 	data = sock.recv(64) # buffer size is 1024 bytes
-	sock.send(str.encode(dataToSend + ","))
 	dataRecived = data.decode()
-	dataOut = dataRecived.split(',')
-	x = float(dataOut[0])
-	y = float(dataOut[1])
-	tmp = []
-	for i in range(2,len(dataOut)):
-		tmp.append(float(dataOut[i]))
+	if dataRecived == "?":
+		sock.send(str.encode(str(blocks[0][3])))
+	else:
+		dataOut = dataRecived.split(',')
+		x = float(dataOut[0])
+		y = float(dataOut[1])
+		tmp = []
+		for i in range(2,len(dataOut)):
+			tmp.append(float(dataOut[i]))
 
-	try:
-		blocks[1] = tmp
-	except IndexError:
-		blocks.append(tmp)
-
+		try:
+			blocks[1] = tmp
+		except IndexError:
+			blocks.append(tmp)
+	
 	gameDisplay.fill(black)
 	car(x,y)
 

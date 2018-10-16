@@ -87,9 +87,8 @@ def updateBlock(block):
 		block[4] += block[0]
 	elif block[4] >= display_height + block[2]/2:
 		print("blocks dodged: %f" % (block[0] - blockSpeed))
-		recv = conn.recv(64).decode()[:-1]
-		recvOut = recv.split(',')[-1]
-		block[3] = float(recvOut)
+		conn.send(str.encode("?"))
+		block[3] = float(conn.recv(64).decode())
 # 		block[3] = random.randint(0, display_width - block[1])
 		block[4] = 0
 		block[0] += speedDelta
