@@ -1,16 +1,14 @@
 import pygame
 import socket
 
-# UDP connection setup
-UDP_IP_send = input("Enter your opponents ip address:")
-UDP_IP_recv = "127.0.0.1"
-UDP_PORT = 5005
+# TCP connection setup
+TCP_IP = "jamulan.com"
+TCP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # Internet
-                     socket.SOCK_DGRAM) # UDP
-sock.bind((UDP_IP_recv, UDP_PORT))
+                     socket.SOCK_STREAM) # TCP
+sock.connect((TCP_IP, TCP_PORT))
 #####
-
 pygame.init()
 
 display_width = 800
@@ -60,19 +58,24 @@ def scoreDisplay(text):
 def thing(thingx, thingy, thingw, thingh, color):
     pygame.draw.rect(gameDisplay, color, [thingx, thingy, thingw, thingh])
 
-def drawBlock(block):
-    thing(block[3], block[4], block[1], block[2], colors[ int(block[5]) ] )
 
-blockStartx = display_width/2
+blockStartx = float(display_width/2)
 blockStarty = 0
 blockWidth = 100
 blockHeight = 100
-blockSpeed = 3.0
+blockSpeed = 0
 speedDelta = 0.1
 blockX = blockStartx
 blockY = blockStarty
 blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 2]
 blocks = [blockDefault]
+
+def drawBlock(block):
+	if int(block[0]) == 0:
+		c = 2
+	else:
+		c = 0
+	thing(block[3], block[4], block[1], block[2], colors[c] )
 
 while not quited:
 
@@ -81,26 +84,36 @@ while not quited:
 			quited = True
 
 	if event.type == pygame.KEYDOWN:
-		if event.key == pygame.K_LEFT and x > 0:
+		tmpX = int(blocks[0][3])
+		if event.key == pygame.K_LEFT and tmpX > 0:
 			blocks[0][3] += -1 * dx
-		elif event.key == pygame.K_RIGHT and x < (display_width - blocks[0][2]):
+		elif event.key == pygame.K_RIGHT and tmpX < (display_width - blocks[0][2]):
 			blocks[0][3] += dx
-
-	dataToSend = str(blocks[0][3])
-	sock.sendto(str.encode(dataToSend), (UDP_IP_send, UDP_PORT)) # 200 in a placeholder for blackStartx
-	data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+	
+	data = sock.recv(64) # buffer size is 1024 bytes
 	dataRecived = data.decode()
-	dataOut = dataRecived.split(',')
-	x = float(dataOut[0])
-	y = float(dataOut[1])
-	tmp = []
-	for i in range(2,8):
-		tmp.append(float(dataOut[i]))
+#	print(dataRecived)
+#	try:
+	if not "?" in dataRecived:
+		dataOut = dataRecived.split(',')
+		if len(dataOut) == 9:
+			x = float(dataOut[0])
+			y = float(dataOut[1])
+			tmp = []
+			for i in range(2,8):
+				tmp.append(float(dataOut[i]))
 
-	try:
-		blocks[1] = tmp
-	except IndexError:
-		blocks.append(tmp)
+			try:
+				blocks[1] = tmp
+			except IndexError:
+				blocks.append(tmp)
+	else:
+		blocks[1] = blocks[0]
+		blocks[1][-1] = 0
+		sock.send(str.encode(str(blocks[0][3])))
+#	except IndexError:
+#		for i in range(1,len(blocks)):
+#			del blocks[i]
 
 	gameDisplay.fill(black)
 	car(x,y)
@@ -110,3 +123,7 @@ while not quited:
 
 	pygame.display.update()
 	clock.tick(60)
+
+sock.close()
+pygome.quit()
+quit()

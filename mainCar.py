@@ -3,15 +3,25 @@ import random
 import pygame
 import socket
 
-# UDP Connoction setup
-UDP_IP_send = input("Enter your opponents ip address:")
-UDP_IP_recv = "127.0.0.1"
-UDP_PORT = 5005
+# TCP Connoction setup
+TCP_IP = "jamulan.com"
+TCP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # Internet
-				 socket.SOCK_DGRAM) # UDP
-sock.bind((UDP_IP_recv, UDP_PORT))
+				 socket.SOCK_STREAM) # TCP
+try:
+	sock.bind((TCP_IP, TCP_PORT))
+except OSError:
+	sock.close()
+	sock = socket.socket(socket.AF_INET, # Internet
+				 socket.SOCK_STREAM) # TCP
+	sock.bind((TCP_IP, TCP_PORT))
+	
+sock.listen(1)
 ######
+input("Press any key when the oppenet is ready")
+
+conn, addr = sock.accept()
 
 pygame.init()
 
@@ -69,8 +79,8 @@ blockStartx = display_width/2
 blockStarty = 0
 blockWidth = 100
 blockHeight = 100
-blockSpeed = 3.0
-speedDelta = 0.1
+blockSpeed = 5.0
+speedDelta = 1.0
 blockX = blockStartx
 blockY = blockStarty
 blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 0]
@@ -78,20 +88,23 @@ blocks = [blockDefault]
 
 def updateBlock(block):
 	if ((x > block[3] and x < block[3] + block[1]) or (x + carWidth > block[3] and x + carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= y):
+		print("blocks dodged: %f" % (block[0] - blockSpeed))
 		crashed()
 	elif block[4] < display_height + (block[2]/2):
 		block[4] += block[0]
 	elif block[4] >= display_height + block[2]/2:
-		block[3] = blockStartx
+		print("blocks dodged: %f" % (block[0] - blockSpeed))
+		conn.send(str.encode("?"))
+		block[3] = float(conn.recv(64).decode())
 # 		block[3] = random.randint(0, display_width - block[1])
 		block[4] = 0
 		block[0] += speedDelta
-
 def crashed():
-	message_display("GAME OVER")
+	conn.send(str.encode("GAME OVER"))
+	conn.close()
 	pygame.quit()
 	quit()
-
+	
 while not quited:
 
 	for event in pygame.event.get():
@@ -103,15 +116,15 @@ while not quited:
 			x += -1 * dx
 		elif event.key == pygame.K_RIGHT and x < (display_width - carWidth):
 			x += dx
-
 	dataToSend = str(x) + "," + str(y)
 	for block in blocks:
 		for atribute in block:
 			dataToSend += ("," + str(atribute))
-
-	sock.sendto(str.encode(dataToSend), (UDP_IP_send, UDP_PORT))
-	data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-	blockStartx = float(data.decode())
+		dataToSend += ","
+	conn.send(str.encode(dataToSend))
+#	data = conn.recv(64) # buffer size is 1024 bytes
+#	dataOut = data.decode().split(',')
+#	blockStartx = float(data[0])
 
 	gameDisplay.fill(black)
 	car(x,y)
@@ -125,3 +138,4 @@ while not quited:
 
 pygame.quit()
 quit()
+conn.close()
