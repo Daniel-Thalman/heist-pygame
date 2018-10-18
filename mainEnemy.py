@@ -58,19 +58,24 @@ def scoreDisplay(text):
 def thing(thingx, thingy, thingw, thingh, color):
     pygame.draw.rect(gameDisplay, color, [thingx, thingy, thingw, thingh])
 
-def drawBlock(block):
-    thing(block[3], block[4], block[1], block[2], colors[ int(block[5]) ] )
 
 blockStartx = float(display_width/2)
 blockStarty = 0
 blockWidth = 100
 blockHeight = 100
-blockSpeed = 3.0
+blockSpeed = 0
 speedDelta = 0.1
 blockX = blockStartx
 blockY = blockStarty
 blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 2]
 blocks = [blockDefault]
+
+def drawBlock(block):
+	if int(block[0]) == 0:
+		c = 2
+	else:
+		c = 0
+	thing(block[3], block[4], block[1], block[2], colors[c] )
 
 while not quited:
 
@@ -87,21 +92,29 @@ while not quited:
 	
 	data = sock.recv(64) # buffer size is 1024 bytes
 	dataRecived = data.decode()
-	if dataRecived == "?":
-		sock.send(str.encode(str(blocks[0][3])))
-	else:
+#	print(dataRecived)
+#	try:
+	if not "?" in dataRecived:
 		dataOut = dataRecived.split(',')
-		x = float(dataOut[0])
-		y = float(dataOut[1])
-		tmp = []
-		for i in range(2,len(dataOut)):
-			tmp.append(float(dataOut[i]))
+		if len(dataOut) == 9:
+			x = float(dataOut[0])
+			y = float(dataOut[1])
+			tmp = []
+			for i in range(2,8):
+				tmp.append(float(dataOut[i]))
 
-		try:
-			blocks[1] = tmp
-		except IndexError:
-			blocks.append(tmp)
-	
+			try:
+				blocks[1] = tmp
+			except IndexError:
+				blocks.append(tmp)
+	else:
+		blocks[1] = blocks[0]
+		blocks[1][-1] = 0
+		sock.send(str.encode(str(blocks[0][3])))
+#	except IndexError:
+#		for i in range(1,len(blocks)):
+#			del blocks[i]
+
 	gameDisplay.fill(black)
 	car(x,y)
 
@@ -109,7 +122,7 @@ while not quited:
 		drawBlock(block)
 
 	pygame.display.update()
-	clock.tick(30)
+	clock.tick(60)
 
 sock.close()
 pygome.quit()

@@ -9,7 +9,14 @@ TCP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # Internet
 				 socket.SOCK_STREAM) # TCP
-sock.bind((TCP_IP, TCP_PORT))
+try:
+	sock.bind((TCP_IP, TCP_PORT))
+except OSError:
+	sock.close()
+	sock = socket.socket(socket.AF_INET, # Internet
+				 socket.SOCK_STREAM) # TCP
+	sock.bind((TCP_IP, TCP_PORT))
+	
 sock.listen(1)
 ######
 input("Press any key when the oppenet is ready")
@@ -72,7 +79,7 @@ blockStartx = display_width/2
 blockStarty = 0
 blockWidth = 100
 blockHeight = 100
-blockSpeed = 10.0
+blockSpeed = 5.0
 speedDelta = 1.0
 blockX = blockStartx
 blockY = blockStarty
@@ -113,6 +120,7 @@ while not quited:
 	for block in blocks:
 		for atribute in block:
 			dataToSend += ("," + str(atribute))
+		dataToSend += ","
 	conn.send(str.encode(dataToSend))
 #	data = conn.recv(64) # buffer size is 1024 bytes
 #	dataOut = data.decode().split(',')
@@ -126,7 +134,7 @@ while not quited:
 		drawBlock(block)
 
 	pygame.display.update()
-	clock.tick(30)
+	clock.tick(60)
 
 pygame.quit()
 quit()
