@@ -93,27 +93,27 @@ while not quited:
 	data = sock.recv(64) # buffer size is 1024 bytes
 	dataRecived = data.decode()
 #	print(dataRecived)
-#	try:
-	if not "?" in dataRecived:
-		dataOut = dataRecived.split(',')
-		if len(dataOut) == 9:
-			x = float(dataOut[0])
-			y = float(dataOut[1])
-			tmp = []
-			for i in range(2,8):
-				tmp.append(float(dataOut[i]))
+	try:
+		if not "?" in dataRecived:
+			dataOut = dataRecived.split(',')
+			if len(dataOut) == 9:
+				x = float(dataOut[0])
+				y = float(dataOut[1])
+				tmp = []
+				for i in range(2,8):
+					tmp.append(float(dataOut[i]))
 
-			try:
-				blocks[1] = tmp
-			except IndexError:
-				blocks.append(tmp)
-	else:
-		blocks[1] = blocks[0]
-		blocks[1][-1] = 0
-		sock.send(str.encode(str(blocks[0][3])))
-#	except IndexError:
-#		for i in range(1,len(blocks)):
-#			del blocks[i]
+				try:
+					blocks[1] = tmp
+				except IndexError:
+					blocks.append(tmp)
+		else:
+			blocks[1] = blocks[0]
+			blocks[1][-1] = 0
+			sock.send(str.encode(str(blocks[0][3])))
+	except IndexError:
+		for i in range(1,len(blocks)):
+			del blocks[i]
 
 	gameDisplay.fill(black)
 	car(x,y)
