@@ -1,7 +1,8 @@
 #!/bin/py
-import random
 import pygame
 import socket
+
+print("Loading...")
 
 # TCP Connoction setup
 TCP_IP = "jamulan.com"
@@ -9,17 +10,16 @@ TCP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # Internet
 				 socket.SOCK_STREAM) # TCP
-try:
-	sock.bind((TCP_IP, TCP_PORT))
-except OSError:
-	sock.close()
-	sock = socket.socket(socket.AF_INET, # Internet
-				 socket.SOCK_STREAM) # TCP
-	sock.bind((TCP_IP, TCP_PORT))
-	
+variableName = True
+while variableName:
+	try:
+		sock.bind((TCP_IP, TCP_PORT))
+		variableName = False
+	except OSError:
+		variableName = True
 sock.listen(1)
 ######
-input("Press any key when the oppenet is ready")
+input("Press return when your enemy is ready")
 
 conn, addr = sock.accept()
 
@@ -30,7 +30,7 @@ display_height = 600
 carWidth = 80
 dx = 10
 gameDisplay = pygame.display.set_mode((display_width,display_height))
-pygame.display.set_caption('A bit Racey')
+pygame.display.set_caption('Heist: Car')
 
 black = (0,0,0)
 white = (255,255,255)
@@ -80,7 +80,7 @@ blockStarty = 0
 blockWidth = 100
 blockHeight = 100
 blockSpeed = 5.0
-speedDelta = 1.0
+speedDelta = 0.2
 blockX = blockStartx
 blockY = blockStarty
 blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 0]
@@ -88,19 +88,22 @@ blocks = [blockDefault]
 
 def updateBlock(block):
 	if ((x > block[3] and x < block[3] + block[1]) or (x + carWidth > block[3] and x + carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= y):
-		print("blocks dodged: %f" % (block[0] - blockSpeed))
+		print("You ended with a score of %d" % ((int((block[0] - blockSpeed) * 100))))
 		crashed()
 	elif block[4] < display_height + (block[2]/2):
-		block[4] += block[0]
+		block[4] += int(block[0])
 	elif block[4] >= display_height + block[2]/2:
-		print("blocks dodged: %f" % (block[0] - blockSpeed))
+#		print("your score: %d" % ((int((block[0] - blockSpeed) * 100))))
 		conn.send(str.encode("?"))
 		block[3] = float(conn.recv(64).decode())
 # 		block[3] = random.randint(0, display_width - block[1])
 		block[4] = 0
 		block[0] += speedDelta
+#		print(int(block[0]))
+
 def crashed():
-	conn.send(str.encode("GAME OVER"))
+	conn.send(str.encode("You win.  The car got a score of %d" % ((int((block[0] - blockSpeed) * 100)))))
+	
 	conn.close()
 	pygame.quit()
 	quit()
@@ -119,7 +122,7 @@ while not quited:
 	dataToSend = str(x) + "," + str(y)
 	for block in blocks:
 		for atribute in block:
-			dataToSend += ("," + str(atribute))
+			dataToSend += ("," + str(int(atribute)))
 		dataToSend += ","
 	conn.send(str.encode(dataToSend))
 #	data = conn.recv(64) # buffer size is 1024 bytes
