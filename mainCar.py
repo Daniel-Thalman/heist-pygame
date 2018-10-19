@@ -1,28 +1,5 @@
-#!/bin/py
+import random
 import pygame
-import socket
-
-print("Loading...")
-
-# TCP Connoction setup
-addressFile = open("address.txt", 'r')
-TCP_IP = addressFile.readline()
-TCP_PORT = 5005
-addressFile.close()
-sock = socket.socket(socket.AF_INET, # Internet
-				 socket.SOCK_STREAM) # TCP
-variableName = True
-while variableName:
-	try:
-		sock.bind((TCP_IP, TCP_PORT))
-		variableName = False
-	except OSError:
-		variableName = True
-sock.listen(1)
-######
-input("Press return when your enemy is ready")
-
-conn, addr = sock.accept()
 
 pygame.init()
 
@@ -31,7 +8,7 @@ display_height = 600
 carWidth = 80
 dx = 10
 gameDisplay = pygame.display.set_mode((display_width,display_height))
-pygame.display.set_caption('Heist: Car')
+pygame.display.set_caption('Heist: SinglePlayer')
 
 black = (0,0,0)
 white = (255,255,255)
@@ -80,7 +57,7 @@ blockStartx = display_width/2
 blockStarty = 0
 blockWidth = 100
 blockHeight = 100
-blockSpeed = 5.0
+blockSpeed = 7.0
 speedDelta = 0.1
 blockX = blockStartx
 blockY = blockStarty
@@ -95,17 +72,12 @@ def updateBlock(block):
 		block[4] += int(block[0])
 	elif block[4] >= display_height + block[2]/2:
 #		print("your score: %d" % ((int((block[0] - blockSpeed) * 100))))
-		conn.send(str.encode("?"))
-		block[3] = float(conn.recv(64).decode())
-# 		block[3] = random.randint(0, display_width - block[1])
+		block[3] = random.randint(0, display_width - block[1])
 		block[4] = 0
 		block[0] += speedDelta
 #		print(int(block[0]))
 
 def crashed():
-	conn.send(str.encode("You win.  The car got a score of %d" % ((int((block[0] - blockSpeed) * 100)))))
-	
-	conn.close()
 	pygame.quit()
 	quit()
 	
@@ -125,10 +97,6 @@ while not quited:
 		for atribute in block:
 			dataToSend += ("," + str(int(atribute)))
 		dataToSend += ","
-	conn.send(str.encode(dataToSend))
-#	data = conn.recv(64) # buffer size is 1024 bytes
-#	dataOut = data.decode().split(',')
-#	blockStartx = float(data[0])
 
 	gameDisplay.fill(black)
 	car(x,y)
@@ -142,4 +110,3 @@ while not quited:
 
 pygame.quit()
 quit()
-conn.close()
