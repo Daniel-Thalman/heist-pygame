@@ -6,10 +6,9 @@ print("Loading...")
 
 # TCP Connoction setup
 addressFile = open("address.txt", 'r')
-print(addressFile.readline())
 TCP_IP = addressFile.readline()
 TCP_PORT = 5005
-
+addressFile.close()
 sock = socket.socket(socket.AF_INET, # Internet
 				 socket.SOCK_STREAM) # TCP
 variableName = True
@@ -82,7 +81,7 @@ blockStarty = 0
 blockWidth = 100
 blockHeight = 100
 blockSpeed = 5.0
-speedDelta = 0.2
+speedDelta = 0.1
 blockX = blockStartx
 blockY = blockStarty
 blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 0]

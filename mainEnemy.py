@@ -5,7 +5,7 @@ import socket
 addressFile = open("address.txt", 'r')
 TCP_IP = addressFile.readline()
 TCP_PORT = 5005
-
+addressFile.close()
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_STREAM) # TCP
 sock.connect((TCP_IP, TCP_PORT))
