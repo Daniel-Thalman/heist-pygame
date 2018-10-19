@@ -4,10 +4,10 @@ import socket
 print("Loading...")
 
 # TCP Connoction setup
-addressFile = open("address.txt", 'r')
-TCP_IP = addressFile.readline()
+#addressFile = open("address.txt", 'r')
+TCP_IP = "jamulan.com"
 TCP_PORT = 5005
-addressFile.close()
+# addressFile.close()
 sock = socket.socket(socket.AF_INET, # Internet
 				 socket.SOCK_STREAM) # TCP
 variableName = True
