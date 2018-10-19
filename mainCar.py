@@ -5,7 +5,9 @@ import socket
 print("Loading...")
 
 # TCP Connoction setup
-TCP_IP = "jamulan.com"
+addressFile = open("address.txt", 'r')
+print(addressFile.readline())
+TCP_IP = addressFile.readline()
 TCP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # Internet

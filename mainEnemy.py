@@ -2,7 +2,8 @@ import pygame
 import socket
 
 # TCP connection setup
-TCP_IP = "jamulan.com"
+addressFile = open("address.txt", 'r')
+TCP_IP = addressFile.readline()
 TCP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # Internet
