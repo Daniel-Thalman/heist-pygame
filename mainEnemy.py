@@ -17,7 +17,7 @@ display_height = 600
 carWidth = 80
 dx = 10
 gameDisplay = pygame.display.set_mode((display_width,display_height))
-pygame.display.set_caption('Heist: Enemy")
+pygame.display.set_caption("Heist: Enemy")
 
 black = (0,0,0)
 white = (255,255,255)
@@ -94,7 +94,7 @@ while not quited:
 	data = sock.recv(64) # buffer size is 1024 bytes
 	dataRecived = data.decode()
 #	print(dataRecived)
-	if "GAME OVER" in dataRecived:
+	if "You win." in dataRecived:
 		print(dataRecived)
 		sock.close()
 		pygame.quit()

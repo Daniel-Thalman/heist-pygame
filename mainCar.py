@@ -1,4 +1,3 @@
-#!/bin/py
 import pygame
 import socket
 
@@ -97,7 +96,6 @@ def updateBlock(block):
 #		print("your score: %d" % ((int((block[0] - blockSpeed) * 100))))
 		conn.send(str.encode("?"))
 		block[3] = float(conn.recv(64).decode())
-# 		block[3] = random.randint(0, display_width - block[1])
 		block[4] = 0
 		block[0] += speedDelta
 #		print(int(block[0]))
@@ -126,9 +124,6 @@ while not quited:
 			dataToSend += ("," + str(int(atribute)))
 		dataToSend += ","
 	conn.send(str.encode(dataToSend))
-#	data = conn.recv(64) # buffer size is 1024 bytes
-#	dataOut = data.decode().split(',')
-#	blockStartx = float(data[0])
 
 	gameDisplay.fill(black)
 	car(x,y)
