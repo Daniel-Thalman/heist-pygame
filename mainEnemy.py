@@ -1,23 +1,12 @@
 import pygame
-import socket
-
-# TCP connection setup
-addressFile = open("address.txt", 'r')
-TCP_IP = addressFile.readline()
-TCP_PORT = 5005
-addressFile.close()
-sock = socket.socket(socket.AF_INET, # Internet
-                     socket.SOCK_STREAM) # TCP
-sock.connect((TCP_IP, TCP_PORT))
-#####
-pygame.init()
+import random
 
 display_width = 800
 display_height = 600
 carWidth = 80
 dx = 10
 gameDisplay = pygame.display.set_mode((display_width,display_height))
-pygame.display.set_caption('Heist: Enemy")
+pygame.display.set_caption("Heist: Enemy")
 
 black = (0,0,0)
 white = (255,255,255)
@@ -64,12 +53,24 @@ blockStartx = float(display_width/2)
 blockStarty = 0
 blockWidth = 100
 blockHeight = 100
-blockSpeed = 0
+blockSpeed = 4.0
 speedDelta = 0.1
 blockX = blockStartx
 blockY = blockStarty
-blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 2]
-blocks = [blockDefault]
+blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 0]
+blocks = [ [0, blockWidth, blockHeight, blockStartx, 0, 2], blockDefault]
+
+def updateBlock(block):
+	if ((x > block[3] and x < block[3] + block[1]) or (x + carWidth > block[3] and x + carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= y):
+		print("You Won.  the car gat a score of %d" % ((int((block[0] - blockSpeed) * 100))))
+		pygame.quit()
+		quit()
+	elif block[4] < display_height + (block[2]/2):
+		block[4] += int(block[0])
+	elif block[4] >= display_height + block[2]/2:
+		block[3] = blocks[0][3]
+		block[4] = 0
+		block[0] += speedDelta
 
 def drawBlock(block):
 	if int(block[0]) == 0:
@@ -77,6 +78,16 @@ def drawBlock(block):
 	else:
 		c = 0
 	thing(block[3], block[4], block[1], block[2], colors[c] )
+
+def carLogic(Xdodge, Xcontrol):
+	diff = Xcontrol - Xdodge
+	if diff > 0:
+		return -1
+	elif diff < 0:
+		return 1
+	else:
+		out = random.randint(-1, 1)
+		return out
 
 while not quited:
 
@@ -91,42 +102,16 @@ while not quited:
 		elif event.key == pygame.K_RIGHT and tmpX < (display_width - blocks[0][2]):
 			blocks[0][3] += dx
 	
-	data = sock.recv(64) # buffer size is 1024 bytes
-	dataRecived = data.decode()
-#	print(dataRecived)
-	if "GAME OVER" in dataRecived:
-		print(dataRecived)
-		sock.close()
-		pygame.quit()
-		quit()
-	try:
-		if not "?" in dataRecived:
-			dataOut = dataRecived.split(',')
-			if len(dataOut) == 9:
-				x = float(dataOut[0])
-				y = float(dataOut[1])
-				tmp = []
-				for i in range(2,8):
-					tmp.append(float(dataOut[i]))
+	direction = carLogic(blocks[1][3], x)
+	if direction > 0 and x > 0:
+		x += -1 * dx
+	elif direction < 0 and x < (display_width - carWidth):
+		x += dx
 
-				try:
-					blocks[1] = tmp
-				except IndexError:
-					blocks.append(tmp)
-				block1 = blocks[1]
-		else:
-			blocks[1] = blocks[0]
-			blocks[1][-1] = 0
-			sock.send(str.encode(str(blocks[0][3])))
-	except IndexError:
-		for i in range(1,len(blocks)):
-			del blocks[i]
-	except ValueError:
-		for i in range(1,len(blocks)):
-			del blocks[i]
 	gameDisplay.fill(black)
 	car(x,y)
 
+	updateBlock(blocks[1])
 	for block in blocks:
 		drawBlock(block)
 
