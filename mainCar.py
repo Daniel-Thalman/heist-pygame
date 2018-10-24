@@ -27,25 +27,6 @@ def car(x,y):
 x = (display_width * 0.45)
 y = (display_height * 0.7)
 
-def text_objects(text, font):
-    textSurface = font.render(text, True, white)
-    return textSurface, textSurface.get_rect()
-
-def message_display(text):
-    largeText = pygame.font.Font('font.ttf',115)
-    TextSurf, TextRect = text_objects(text, largeText)
-    TextRect.center = ((display_width/2),(display_height/2))
-    gameDisplay.blit(TextSurf, TextRect)
-
-    pygame.display.update()
-
-def scoreDisplay(text):
-    largeText = pygame.font.Font('font.ttf', 30)
-    TextSurf, TextRect = text_objects(str(text), largeText)
-    TextRect.center = (display_width/2, 30)
-    gameDisplay.blit(TextSurf, TextRect)
-
-    pygame.display.update()
 
 def thing(thingx, thingy, thingw, thingh, color):
     pygame.draw.rect(gameDisplay, color, [thingx, thingy, thingw, thingh])
