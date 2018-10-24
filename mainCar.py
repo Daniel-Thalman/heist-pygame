@@ -96,6 +96,7 @@ while not quited:
 		elif event.key == pygame.K_RIGHT and x < (display_width - carWidth):
 			x += dx
 			keyDir = 1
+
 	dataToSend = str(x) + "," + str(y)
 	for block in blocks:
 		for atribute in block:
@@ -108,6 +109,7 @@ while not quited:
 	file = open("learningData.csv", 'a')
 	file.write("%d,%d,%d,%d,%d,%d\n" % (x,y,blocks[0][3],blocks[0][4],blocks[0][0],keyDir) )
 	file.close()
+	
 	for block in blocks:
 		updateBlock(block)
 		drawBlock(block)

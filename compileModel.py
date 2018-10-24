@@ -4,8 +4,9 @@ import numpy as np
 
 model = Sequential()
 
-model.add(Dense(units=10, activation='relu', input_dim=5))
-model.add(Dense(units=1, activation='softmax'))
+model.add(Dense(units=32, activation='relu', input_dim=5))
+model.add(Dense(units=8, activation='softmax'))
+model.add(Dense(units=3, activation='softmax'))
 
 model.compile(loss='mean_squared_error', optimizer='sgd', metrics=['accuracy'])
 
@@ -18,9 +19,15 @@ for line in dataFile:
 	x_values += [splitline[:-1]]
 	y_values += [splitline[-1]]
 
+real_y_values = []
+for entry in y_values:
+	template = [0, 0 ,0]
+	template[int(entry) + 1] = 1
+	real_y_values += [template]
+
+
 x_values = np.array(x_values)
-y_values = np.array(y_values)
-print(x_values)
+y_values = np.array(real_y_values)
 
 model.fit(x_values, y_values, epochs=5, batch_size=32)
 

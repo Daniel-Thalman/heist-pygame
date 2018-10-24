@@ -102,12 +102,16 @@ while not quited:
 	
 	x_values = np.array( [[ x, y, blocks[1][3], blocks[1][4], blocks[1][0] ]] )
 	
-	prediction = model.predict(x_values)	
+	prediction = model.predict(x_values).tolist()[0]
+	maxVal = max(prediction)
+	prediction = prediction.index(maxVal) - 1
+
 	if prediction == -1 and x > 0:
 		x += -1 * dx
 	elif prediction == 1 and x < (display_width - carWidth):
 		x += dx
-	print(prediction)
+
+
 	gameDisplay.fill(black)
 	car(x,y)
 
