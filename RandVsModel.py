@@ -1,5 +1,12 @@
 import random
 import pygame
+import numpy as np
+from keras.models import model_from_json, Sequential
+
+modelFile = open("model.json")
+model = model_from_json(modelFile.read())
+model.load_weights("weights.hdf5")
+modelFile.close()
 
 pygame.init()
 
@@ -8,7 +15,7 @@ display_height = 600
 carWidth = 80
 dx = 10
 gameDisplay = pygame.display.set_mode((display_width,display_height))
-pygame.display.set_caption('Heist: SinglePlayer')
+pygame.display.set_caption('Heist: Model')
 
 black = (0,0,0)
 white = (255,255,255)
@@ -88,23 +95,20 @@ while not quited:
 		if event.type == pygame.QUIT:
 			quited = True
 	
-	keyDir = 0
-	if event.type == pygame.KEYDOWN:
-		if event.key == pygame.K_LEFT and x > 0:
-			x += -1 * dx
-			keyDir = -1
-		elif event.key == pygame.K_RIGHT and x < (display_width - carWidth):
-			x += dx
-			keyDir = 1
+	x_values = np.array( [[ x, y, blocks[0][3], blocks[0][4], blocks[0][0] ]] )
+	
+	prediction = model.predict(x_values).tolist()[0]
+	maxVal = max(prediction)
+	prediction = prediction.index(maxVal) - 1
 
+	if prediction == -1 and x > 0:
+		x += -1 * dx
+	elif prediction == 1 and x < (display_width - carWidth):
+		x += dx
+	
 	gameDisplay.fill(black)
 	car(x,y)
 
-	if keyDir != 0:
-		file = open("learningData.csv", 'a')
-		file.write("%d,%d,%d,%d,%d,%d\n" % (x,y,blocks[0][3],blocks[0][4],blocks[0][0],keyDir) )
-		file.close()
-	
 	for block in blocks:
 		updateBlock(block)
 		drawBlock(block)
