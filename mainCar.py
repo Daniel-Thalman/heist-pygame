@@ -57,7 +57,7 @@ blockStartx = display_width/2
 blockStarty = 0
 blockWidth = 100
 blockHeight = 100
-blockSpeed = 7.0
+blockSpeed = 4.0
 speedDelta = 0.1
 blockX = blockStartx
 blockY = blockStarty
@@ -80,18 +80,22 @@ def updateBlock(block):
 def crashed():
 	pygame.quit()
 	quit()
+
 	
 while not quited:
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			quited = True
-
+	
+	keyDir = 0
 	if event.type == pygame.KEYDOWN:
 		if event.key == pygame.K_LEFT and x > 0:
 			x += -1 * dx
+			keyDir = -1
 		elif event.key == pygame.K_RIGHT and x < (display_width - carWidth):
 			x += dx
+			keyDir = 1
 	dataToSend = str(x) + "," + str(y)
 	for block in blocks:
 		for atribute in block:
@@ -101,6 +105,9 @@ while not quited:
 	gameDisplay.fill(black)
 	car(x,y)
 
+	file = open("learningData.csv", 'a')
+	file.write("%d,%d,%d,%d,%d,%d\n" % (x,y,blocks[0][3],blocks[0][4],blocks[0][0],keyDir) )
+	file.close()
 	for block in blocks:
 		updateBlock(block)
 		drawBlock(block)

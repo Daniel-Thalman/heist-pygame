@@ -1,5 +1,12 @@
 import pygame
 import random
+import numpy as np
+from keras.models import model_from_json, Sequential
+
+modelFile = open("model.json")
+model = model_from_json(modelFile.read())
+model.load_weights("weights.hdf5")
+modelFile.close()
 
 display_width = 800
 display_height = 600
@@ -22,7 +29,7 @@ carImg = pygame.image.load('racecar.png')
 def car(x,y):
     gameDisplay.blit(carImg, (x,y))
 
-x = (display_width * 0.45)
+x = (display_width * 0.65)
 y = (display_height * 0.7)
 
 def text_objects(text, font):
@@ -60,6 +67,7 @@ blockY = blockStarty
 blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 0]
 blocks = [ [0, blockWidth, blockHeight, blockStartx, 0, 2], blockDefault]
 
+
 def updateBlock(block):
 	if ((x > block[3] and x < block[3] + block[1]) or (x + carWidth > block[3] and x + carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= y):
 		print("You Won.  the car gat a score of %d" % ((int((block[0] - blockSpeed) * 100))))
@@ -79,16 +87,6 @@ def drawBlock(block):
 		c = 0
 	thing(block[3], block[4], block[1], block[2], colors[c] )
 
-def carLogic(Xdodge, Xcontrol):
-	diff = Xcontrol - Xdodge
-	if diff > 0:
-		return -1
-	elif diff < 0:
-		return 1
-	else:
-		out = random.randint(-1, 1)
-		return out
-
 while not quited:
 
 	for event in pygame.event.get():
@@ -102,12 +100,14 @@ while not quited:
 		elif event.key == pygame.K_RIGHT and tmpX < (display_width - blocks[0][2]):
 			blocks[0][3] += dx
 	
-	direction = carLogic(blocks[1][3], x)
-	if direction > 0 and x > 0:
+	x_values = np.array( [[ x, y, blocks[1][3], blocks[1][4], blocks[1][0] ]] )
+	
+	prediction = model.predict(x_values)	
+	if prediction == -1 and x > 0:
 		x += -1 * dx
-	elif direction < 0 and x < (display_width - carWidth):
+	elif prediction == 1 and x < (display_width - carWidth):
 		x += dx
-
+	print(prediction)
 	gameDisplay.fill(black)
 	car(x,y)
 
