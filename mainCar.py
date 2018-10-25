@@ -39,7 +39,7 @@ blockStarty = 0
 blockWidth = 100
 blockHeight = 100
 blockSpeed = 7.0
-speedDelta = 0.4
+speedDelta = 0.2
 blockX = blockStartx
 blockY = blockStarty
 blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 0]
@@ -59,6 +59,7 @@ def updateBlock(block):
 #		print(int(block[0]))
 
 def crashed():
+	
 	pygame.quit()
 	quit()
 
@@ -81,11 +82,11 @@ while not quited:
 	gameDisplay.fill(black)
 	car(x,y)
 
-	if keyDir != 0:
+	if keyDir != 0 or random.random() < 0.33:
 		file = open("learningData.csv", 'a')
 		file.write("%d,%d,%d,%d,%d,%d\n" % (x,y,blocks[0][3],blocks[0][4],blocks[0][0],keyDir) )
 		file.close()
-	
+
 	for block in blocks:
 		updateBlock(block)
 		drawBlock(block)
