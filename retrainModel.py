@@ -29,7 +29,8 @@ for entry in y_values:
 x_values = np.array(x_values)
 y_values = np.array(real_y_values)
 
-model.fit(x_values, y_values, epochs=5, batch_size=16)
+history = model.fit(x_values, y_values, epochs=5, batch_size=16)
+print(history.history.keys())
 
 modelfile = open("model.json", 'w')
 modelfile.write(model.to_json())

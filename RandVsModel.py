@@ -54,7 +54,8 @@ blocks = [blockDefault]
 def updateBlock(block):
 	if ((x > block[3] and x < block[3] + block[1]) or (x + carWidth > block[3] and x + carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= y):
 		print("You ended with a score of %d" % ((int((block[0] - blockSpeed) * 100))))
-		crashed()
+#		crashed()
+		return True
 	elif block[4] < display_height + (block[2]/2):
 		block[4] += int(block[0])
 	elif block[4] >= display_height + block[2]/2:
@@ -63,6 +64,7 @@ def updateBlock(block):
 		block[4] = 0
 		block[0] += speedDelta
 #		print(int(block[0]))
+	return False
 
 def crashed():
 	pygame.quit()
@@ -90,7 +92,7 @@ while not quited:
 	car(x,y)
 
 	for block in blocks:
-		updateBlock(block)
+		quited = updateBlock(block)
 		drawBlock(block)
 
 	pygame.display.update()
