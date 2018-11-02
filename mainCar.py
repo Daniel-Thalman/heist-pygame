@@ -45,25 +45,30 @@ blockY = blockStarty
 blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 0]
 blocks = [blockDefault]
 
-def updateBlock(block):
+def updateBlock(block, modelInput):
 	if ((x > block[3] and x < block[3] + block[1]) or (x + carWidth > block[3] and x + carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= y):
 		print("You ended with a score of %d" % ((int((block[0] - blockSpeed) * 100))))
 		crashed()
+		return True
 	elif block[4] < display_height + (block[2]/2):
 		block[4] += int(block[0])
+		return False
 	elif block[4] >= display_height + block[2]/2:
 #		print("your score: %d" % ((int((block[0] - blockSpeed) * 100))))
 		block[3] = random.randint(0, display_width - block[1])
 		block[4] = 0
+		file = open("learningData.csv", "a")
+		file.write(modelInput)
+		file.close()
 		block[0] += speedDelta
 #		print(int(block[0]))
+		return True
 
 def crashed():
-	
 	pygame.quit()
 	quit()
 
-	
+currentString = ""
 while not quited:
 
 	for event in pygame.event.get():
@@ -82,13 +87,12 @@ while not quited:
 	gameDisplay.fill(black)
 	car(x,y)
 
-	if keyDir != 0 or random.random() < 0.33:
-		file = open("learningData.csv", 'a')
-		file.write("%d,%d,%d,%d,%d,%d\n" % (x,y,blocks[0][3],blocks[0][4],blocks[0][0],keyDir) )
-		file.close()
+	if keyDir != 0:
+		currentString += ("%d,%d,%d,%d,%d,%d\n" % (x,y,blocks[0][3],blocks[0][4],blocks[0][0],keyDir) )
 
 	for block in blocks:
-		updateBlock(block)
+		if updateBlock(block, currentString):
+			currentString = ""
 		drawBlock(block)
 
 	pygame.display.update()

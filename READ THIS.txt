@@ -1,0 +1,1 @@
+create class to run a network, taking the model as input and returns a fitness score

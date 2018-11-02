@@ -1,13 +1,10 @@
-from keras.models import Sequential
-from keras.layers import Dense
 import numpy as np
+from keras.models import model_from_json, Sequential
 
-model = Sequential()
-
-model.add(Dense(units=8, activation='relu', input_dim=5))
-model.add(Dense(units=16, activation='softmax'))
-model.add(Dense(units=8, activation='softmax'))
-model.add(Dense(units=3, activation='softmax'))
+modelFile = open("model.json")
+model = model_from_json(modelFile.read())
+model.load_weights("weights.hdf5")
+modelFile.close()
 
 model.compile(loss='squared_hinge', optimizer='adam', metrics=['accuracy'])
 
@@ -19,6 +16,8 @@ for line in dataFile:
 	splitline = line[:-1].split(',')
 	x_values += [splitline[:-1]]
 	y_values += [splitline[-1]]
+
+dataFile.close()
 
 real_y_values = []
 for entry in y_values:
