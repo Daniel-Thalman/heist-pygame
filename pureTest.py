@@ -1,14 +1,12 @@
 from renforcement import *
-import compileModel as CM
 
-def something(limit, chance, seed):
-	n = 1024
+def something(seed, n):
 	seed = str(seed)
-	CM.compile()
-	stats = playTrain(seed, n, limit, chance, 8)
+	n = int(n)
+	stats = playPure(seed, n, 4)
 	highScoreF = open("highscore.txt", "a")
 	highScoreF.write(str(stats['max']) + "\n")
 	highScoreF.close()
 	return stats
 
-print(something(100, 0.2, 0))
+print(something(0, 64))

@@ -4,20 +4,27 @@ import numpy as np
 import os
 import statistics as stats
 from keras.models import model_from_json, Sequential
+from multiprocessing import Process
+import compileModel as CM
 
 class Game():
 
 	def __init__(self, seed, limit, chance):
+		
 		self.limit = limit
 		self.chance = chance
 		self.seed = str(seed)
-
+		
+		pygame.quit()
 		pygame.init()
+		pygame.display.init()
 		
 		self.display_width = 800
 		self.display_height = 600
-		self.carWidth = 80
+		self.carWidth = 75
+		self.carHeight = 157
 		self.dx = 10
+		
 		self.gameDisplay = pygame.display.set_mode((self.display_width,self.display_height))
 		pygame.display.set_caption('ID: %s' % (self.seed))
 		
@@ -30,16 +37,15 @@ class Game():
 		
 		self.clock = pygame.time.Clock()
 		self.carImg = pygame.image.load('racecar.png')
-
 		self.reset()
-
+		
 		self.model = Sequential()
-	
+		
 	def reset(self):
 		self.currentString = ""
 		self.currentGameInputs = ""
 		self.quited = False
-
+		
 		self.x = (self.display_width * 0.45)
 		self.y = (self.display_height * 0.7)
 		
@@ -57,7 +63,10 @@ class Game():
 	def getModel(self):
 		modelFile = open("model.json")
 		self.model = model_from_json(modelFile.read())
-		self.model.load_weights("weights%s.hdf5" % (self.seed))
+		try:
+			self.model.load_weights("weights%s.hdf5" % (self.seed))
+		except OSError:
+			CM.train(model, seed)
 		modelFile.close()
 		self.model.compile(loss='squared_hinge', optimizer='adam', metrics=['accuracy'])
 		
@@ -94,6 +103,7 @@ class Game():
 		history = self.model.fit(x_values, y_values, epochs=5, batch_size=16)
 		metrics = history.history
 		return metrics
+	
 		
 	def car(self, x,y):
 		self.gameDisplay.blit(self.carImg, (x,y))
@@ -106,8 +116,8 @@ class Game():
 		self.thing(block[3], block[4], block[1], block[2], self.colors[block[5]])
 	
 	def updateBlock(self, block):
-		if ((self.x > block[3] and self.x < block[3] + block[1]) or (self.x + self.carWidth > block[3] and self.x + self.carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= self.y):
-#			print("You ended with a score of %d" % (self.getScore()))
+		if ((self.x > block[3] and self.x < block[3] + block[1]) or (self.x + self.carWidth > block[3] and self.x + self.carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= self.y and block[4] < (self.y + self.carHeight)):
+			print("You ended with a score of %d" % (self.getScore()))
 #			crashed()
 			return True
 		elif block[4] < self.display_height + (block[2]/2):
@@ -122,15 +132,16 @@ class Game():
 			self.currentString = ""
 		return False
 
-	def crashed(self):
+	def cleanup(self):
 		pygame.quit()
 		quit()
 	
 	def getScore(self):
-		return int((self.blocks[0][0] - self.blockSpeed) * 100)
+		return int((self.blocks[0][0] - self.blockSpeed) * 10)
 	
 	def gameTest(self, mod):
 		self.reset()
+			
 		while not self.quited:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -158,10 +169,9 @@ class Game():
 			elif prediction == 1 and self.x < (self.display_width - self.carWidth):
 				self.x += self.dx
 				keydir = 1
-			
 			self.gameDisplay.fill(self.black)
 			self.car(self.x,self.y)
-			if keydir != 0:
+			if self.limit != -1 and keydir != 0:
 				self.currentString += ("%d,%d,%d,%d,%d,%d\n" % (self.x,self.y,self.blocks[0][3],self.blocks[0][4],self.blocks[0][0],keydir) )
 			
 			for block in self.blocks:
@@ -172,17 +182,16 @@ class Game():
 			self.clock.tick(60)
 		
 		score = self.getScore()
-		if score > self.limit:
+		if self.limit != -1 and score > self.limit:
 			datafile = open("data%s.csv" % (self.seed), 'a')
 			datafile.write(self.currentGameInputs)
 			datafile.close()
-		return self.getScore()
+		return score
 
 	def gameTests(self, mods):
 		scores = []
 		for mod in mods:
 			scores += self.gameTest(mod)
-			pygame.display.set_caption('ID: %s, Games Played: %d' % (self.seed, len(scores)))
 		
 		return scores
 
@@ -190,26 +199,128 @@ class Game():
 		file = open("scores%s.csv" % (self.seed), 'a+')
 		for i in range(1, n + 1):
 			file.write(str(self.gameTestM()) + "\n")
-			if i % 8 == 0:
-				print("Games Played in cycle: %d" % (i))
+#			if i % (n//4) == 0:
+#				print("Games Played in cycle: %d" % (i))
 		file.close()
+		pygame.quit()
+	
+	def pureTest(self, n):
+		file = open("scores%s.csv" % (self.seed), 'a+')
+		self.getModel()
+		for i in range(1, n + 1):
+			file.write(str(self.gameTest(self.model)) + "\n")
+		file.close()
+		pygame.quit()
 
 	def gameTestM(self):
 		self.getModel()
 		return self.gameTest(self.model)
 
-def playTrain(seed, n, limit, chance):
+def getStats(seed):
+	scorefile = open("scores%s.csv" % (seed))
+	lines = scorefile.readlines()
+	scores = []
+	for line in lines:
+		scores += [int(line[:-1])]
+	
+	out = { "min" : min(scores), "max" : max(scores), "median" : stats.median(scores), "mean" : stats.mean(scores), "stdev" : stats.stdev(scores) }
+	scorefile.close()
+	return out
+
+def pureGames(seed, n):
+	game = Game(seed, -1, 0)
+	game.pureTest(n)
+	return True
+
+def playGames(seed, n, limit, chance):
+	game = Game(seed, limit, chance)
+	game.gameTestsM(n)
+	return True
+
+def train(seed):
+	try:
+		modelFile = open("model.json")
+		model = model_from_json(modelFile.read())
+		modelFile.close()
+	except OSError:
+		model = CM.compile()
+	
+	model.compile(loss='squared_hinge', optimizer='adam', metrics=['accuracy'])
+	
+	try:
+		model.load_weights("weights%s.hdf5" % (seed))
+	except OSError:
+		CM.train(model, seed)
+
+	dataFile = open("data%s.csv" % (seed))
+
+	x_values = []
+	y_values = []
+	for line in dataFile:
+		splitline = line[:-1].split(',')
+		x_values += [splitline[:-1]]
+		y_values += [splitline[-1]]
+
+	dataFile.close()
+
+	real_y_values = []
+	for entry in y_values:
+		template = [0, 0 ,0]
+		template[int(entry) + 1] = 1
+		real_y_values += [template]
+
+
+	x_values = np.array(x_values)
+	y_values = np.array(real_y_values)
+
+	history = model.fit(x_values, y_values, epochs=5, batch_size=16)
+	metrics = history.history
+	return metrics
+	
+def playPure(seed, n, numProcess):
+	seed = str(seed)
+	newN = n//numProcess
+	
+	try:
+		os.remove("scores%s.csv" % (seed))
+	except FileNotFoundError:
+		True
+	
+	processes = []
+	for i in range(numProcess):
+		processes += [ Process(target=pureGames, args=(seed, newN)) ]
+		processes[i].start()
+	for process in processes:
+		process.join()
+	
+	scorefile = open("scores%s.csv" % (seed))
+	lines = scorefile.readlines()
+	scores = []
+	for line in lines:
+		scores += [int(line[:-1])]
+	
+	out = { "min" : min(scores), "max" : max(scores), "median" : stats.median(scores), "mean" : stats.mean(scores), "stdev" : stats.stdev(scores) }
+	scorefile.close()
+	return out
+
+def playTrain(seed, n, limit, chance, numProcess):
 	seed = str(seed)
 	try:
 		os.remove("data%s.csv" % (seed))
 		os.remove("scores%s.csv" % (seed))
 	except FileNotFoundError:
 		True
-
-	game = Game(seed, limit, chance)
-	game.gameTestsM(n)
-	game.trainModel("data%s.csv" % (seed))
-	game.setModel()
+	
+	newN = n//numProcess
+	processes = []
+	for i in range(numProcess):
+		processes += [Process(target=playGames, args=(seed, newN, limit, chance))]
+		processes[i].start()
+	for process in processes:
+		process.join()
+#	playGames(seed, newN, limit, chance)
+	
+	train(seed)
 	
 	scorefile = open("scores%s.csv" % (seed))
 	lines = scorefile.readlines()

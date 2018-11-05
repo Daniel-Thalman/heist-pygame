@@ -3,19 +3,22 @@ import pygame
 import numpy as np
 from keras.models import model_from_json, Sequential
 
+seed = str(input())
+
 modelFile = open("model.json")
 model = model_from_json(modelFile.read())
-model.load_weights("weights.hdf5")
+model.load_weights("weights%s.hdf5" % (seed))
 modelFile.close()
 
 pygame.init()
 
 display_width = 800
 display_height = 600
-carWidth = 80
+carWidth = 75
+carHeight = 157
 dx = 10
 gameDisplay = pygame.display.set_mode((display_width,display_height))
-pygame.display.set_caption('Heist: Model')
+pygame.display.set_caption('Heist: Model ID: %s' % (seed))
 
 black = (0,0,0)
 white = (255,255,255)
@@ -52,8 +55,8 @@ blockDefault = [blockSpeed, blockWidth, blockHeight, blockX, blockY, 0]
 blocks = [blockDefault]
 
 def updateBlock(block):
-	if ((x > block[3] and x < block[3] + block[1]) or (x + carWidth > block[3] and x + carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= y):
-		print("You ended with a score of %d" % ((int((block[0] - blockSpeed) * 100))))
+	if ((x > block[3] and x < block[3] + block[1]) or (x + carWidth > block[3] and x + carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= y and block[4] < (y + carHeight)):
+		print("You ended with a score of %d" % ((int((block[0] - blockSpeed) * 10))))
 #		crashed()
 		return True
 	elif block[4] < display_height + (block[2]/2):
