@@ -1,2 +1,5 @@
 # temporary files made by vi to keep track of changes
 *.swp
+__pycache__/
+data*
+scores*

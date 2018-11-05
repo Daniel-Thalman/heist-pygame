@@ -15,18 +15,11 @@ class Game():
 		self.chance = chance
 		self.seed = str(seed)
 		
-		pygame.quit()
-		pygame.init()
-		pygame.display.init()
-		
 		self.display_width = 800
 		self.display_height = 600
 		self.carWidth = 75
 		self.carHeight = 157
 		self.dx = 10
-		
-		self.gameDisplay = pygame.display.set_mode((self.display_width,self.display_height))
-		pygame.display.set_caption('ID: %s' % (self.seed))
 		
 		self.black = (0,0,0)
 		self.white = (255,255,255)
@@ -35,8 +28,6 @@ class Game():
 		self.blue = (0, 0, 255)
 		self.colors = [self.red, self.green, self.blue]
 		
-		self.clock = pygame.time.Clock()
-		self.carImg = pygame.image.load('racecar.png')
 		self.reset()
 		
 		self.model = Sequential()
@@ -139,9 +130,61 @@ class Game():
 	def getScore(self):
 		return int((self.blocks[0][0] - self.blockSpeed) * 10)
 	
+	def gameTestNoVis(self, mod):
+		self.reset()
+		pygame.quit()
+		while not self.quited:
+			
+			x_values = np.array( [[ self.x, self.y, self.blocks[0][3], self.blocks[0][4], self.blocks[0][0] ]] )
+			
+			prediction = mod.predict(x_values).tolist()[0]
+			maxVal = max(prediction)
+			prediction = prediction.index(maxVal) - 1
+
+			if random.random() < self.chance:
+				rand = random.random()
+				if rand < 0.33:
+					prediction = -1
+				if rand >= 0.33 and rand < 0.66:
+					prediction = 1
+				else:
+					prediction = 0
+
+			keydir = 0
+			if prediction == -1 and self.x > 0:
+				self.x += -1 * self.dx
+				keydir = -1
+			elif prediction == 1 and self.x < (self.display_width - self.carWidth):
+				self.x += self.dx
+				keydir = 1
+
+			if self.limit != -1 and keydir != 0:
+				self.currentString += ("%d,%d,%d,%d,%d,%d\n" % (self.x,self.y,self.blocks[0][3],self.blocks[0][4],self.blocks[0][0],keydir) )
+			
+			for block in self.blocks:
+				self.quited = self.updateBlock(block)
+
+		
+		score = self.getScore()
+		if self.limit != -1 and score > self.limit:
+			datafile = open("data%s.csv" % (self.seed), 'a')
+			datafile.write(self.currentGameInputs)
+			datafile.close()
+		return score
+	
 	def gameTest(self, mod):
+		pygame.quit()
+		pygame.init()
+		pygame.display.init()
+		
 		self.reset()
 			
+		self.clock = pygame.time.Clock()
+		self.carImg = pygame.image.load('racecar.png')
+
+		self.gameDisplay = pygame.display.set_mode((self.display_width,self.display_height))
+		pygame.display.set_caption('ID: %s' % (self.seed))
+		
 		while not self.quited:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -214,7 +257,7 @@ class Game():
 
 	def gameTestM(self):
 		self.getModel()
-		return self.gameTest(self.model)
+		return self.gameTestNoVis(self.model)
 
 def getStats(seed):
 	scorefile = open("scores%s.csv" % (seed))
