@@ -83,7 +83,7 @@ while not quited:
 	car(x,y)
 
 	for block in blocks:
-		updateBlock(block):
+		updateBlock(block)
 		drawBlock(block)
 
 	pygame.display.update()

@@ -9,6 +9,7 @@ import compileModel as CM
 
 class Game():
 
+
 	def __init__(self, seed, limit, chance):
 		
 		self.limit = limit
@@ -31,6 +32,22 @@ class Game():
 		self.reset()
 		
 		self.model = Sequential()
+
+	def __init__(self):
+		self.display_width = 800
+		self.display_height = 600
+		self.carWidth = 75
+		self.carHeight = 157
+		self.dx = 10
+		
+		self.black = (0,0,0)
+		self.white = (255,255,255)
+		self.red = (255,0,0)
+		self.green = (0, 255, 0)
+		self.blue = (0, 0, 255)
+		self.colors = [self.red, self.green, self.blue]
+		
+		self.reset()
 		
 	def reset(self):
 		self.currentString = ""
@@ -109,16 +126,13 @@ class Game():
 	def updateBlock(self, block):
 		if ((self.x > block[3] and self.x < block[3] + block[1]) or (self.x + self.carWidth > block[3] and self.x + self.carWidth < block[3] + block[1])) and ((block[4] + block[2]) >= self.y and block[4] < (self.y + self.carHeight)):
 			print("You ended with a score of %d" % (self.getScore()))
-#			crashed()
 			return True
 		elif block[4] < self.display_height + (block[2]/2):
 			block[4] += int(block[0])
 		elif block[4] >= self.display_height + block[2]/2:
-	#		print("your score: %d" % ((int((block[0] - blockSpeed) * 100))))
 			block[3] = random.randint(0, self.display_width - block[1])
 			block[4] = 0
 			block[0] += self.speedDelta
-	#		print(int(block[0]))
 			self.currentGameInputs += self.currentString
 			self.currentString = ""
 		return False
@@ -171,7 +185,42 @@ class Game():
 			datafile.write(self.currentGameInputs)
 			datafile.close()
 		return score
-	
+
+	def gameUsrIn(self):
+		pygame.quit()
+		pygame.init()
+		pygame.display.init()
+		
+		self.reset()
+			
+		self.clock = pygame.time.Clock()
+		self.carImg = pygame.image.load('racecar.png')
+
+		self.gameDisplay = pygame.display.set_mode((self.display_width,self.display_height))
+		pygame.display.set_caption('UsrInput')
+
+		while not self.quited:
+
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					self.quited = True
+			
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_LEFT and self.x > 0:
+					self.x += -1 * self.dx
+				elif event.key == pygame.K_RIGHT and self.x < (self.display_width - self.carWidth):
+					self.x += self.dx
+
+			self.gameDisplay.fill(self.black)
+			self.car(self.x,self.y)
+
+			for block in self.blocks:
+				self.quited = self.updateBlock(block)
+				self.drawBlock(block)
+			
+			pygame.display.update()
+			self.clock.tick(60)
+
 	def gameTest(self, mod):
 		pygame.quit()
 		pygame.init()
