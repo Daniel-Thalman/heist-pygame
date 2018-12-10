@@ -11,4 +11,4 @@ def something(limit, chance, seed):
 	highScoreF.close()
 	return stats
 
-print(something(100, 0.2, 0))
+print(something(100, 0.2, ""))
