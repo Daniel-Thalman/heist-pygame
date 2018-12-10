@@ -380,11 +380,11 @@ def playPure(seed, n, numProcess):
 	open("scores%s.csv" % (seed), "w").close()
 	pureGames(seed, n)
 	processes = []
-#	for i in range(numProcess):
-#		processes += [ Process(target=pureGames, args=(seed, newN)) ]
-#		processes[i].start()
-#	for process in processes:
-#		process.join()
+	for i in range(numProcess):
+		processes += [ Process(target=pureGames, args=(seed, newN)) ]
+		processes[i].start()
+	for process in processes:
+		process.join()
 	
 	scorefile = open("scores%s.csv" % (seed), "r")
 	lines = scorefile.readlines()
@@ -406,11 +406,11 @@ def playTrain(seed, n, limit, chance, numProcess):
 	
 	newN = n//numProcess
 	processes = []
-#	for i in range(numProcess):
-#		processes += [Process(target=playGames, args=(seed, newN, limit, chance))]
-#		processes[i].start()
-#	for process in processes:
-#		process.join()
+	for i in range(numProcess):
+		processes += [Process(target=playGames, args=(seed, newN, limit, chance))]
+		processes[i].start()
+	for process in processes:
+		process.join()
 	playGames(seed, newN, limit, chance)
 	
 	train(seed)
