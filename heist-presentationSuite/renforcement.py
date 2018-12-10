@@ -74,7 +74,7 @@ class Game():
 		try:
 			self.model.load_weights("weights%s.hdf5" % (self.seed))
 		except OSError:
-			CM.train(model, seed)
+			CM.train(self.model, self.seed)
 		modelFile.close()
 		self.model.compile(loss='squared_hinge', optimizer='adam', metrics=['accuracy'])
 		
@@ -406,12 +406,12 @@ def playTrain(seed, n, limit, chance, numProcess):
 	
 	newN = n//numProcess
 	processes = []
-	for i in range(numProcess):
-		processes += [Process(target=playGames, args=(seed, newN, limit, chance))]
-		processes[i].start()
-	for process in processes:
-		process.join()
-#	playGames(seed, newN, limit, chance)
+#	for i in range(numProcess):
+#		processes += [Process(target=playGames, args=(seed, newN, limit, chance))]
+#		processes[i].start()
+#	for process in processes:
+#		process.join()
+	playGames(seed, newN, limit, chance)
 	
 	train(seed)
 	
