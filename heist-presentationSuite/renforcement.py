@@ -10,6 +10,22 @@ import compileModel as CM
 class Game():
 
 
+	def __init__(self):
+		self.display_width = 800
+		self.display_height = 600
+		self.carWidth = 75
+		self.carHeight = 157
+		self.dx = 10
+		
+		self.black = (0,0,0)
+		self.white = (255,255,255)
+		self.red = (255,0,0)
+		self.green = (0, 255, 0)
+		self.blue = (0, 0, 255)
+		self.colors = [self.red, self.green, self.blue]
+		
+		self.reset()
+		
 	def __init__(self, seed, limit, chance):
 		
 		self.limit = limit
@@ -33,22 +49,6 @@ class Game():
 		
 		self.model = Sequential()
 
-	def __init__(self):
-		self.display_width = 800
-		self.display_height = 600
-		self.carWidth = 75
-		self.carHeight = 157
-		self.dx = 10
-		
-		self.black = (0,0,0)
-		self.white = (255,255,255)
-		self.red = (255,0,0)
-		self.green = (0, 255, 0)
-		self.blue = (0, 0, 255)
-		self.colors = [self.red, self.green, self.blue]
-		
-		self.reset()
-		
 	def reset(self):
 		self.currentString = ""
 		self.currentGameInputs = ""
@@ -377,15 +377,16 @@ def playPure(seed, n, numProcess):
 		os.remove("scores%s.csv" % (seed))
 	except FileNotFoundError:
 		True
-	
+	open("scores%s.csv" % (seed), "w").close()
+	pureGames(seed, n)
 	processes = []
-	for i in range(numProcess):
-		processes += [ Process(target=pureGames, args=(seed, newN)) ]
-		processes[i].start()
-	for process in processes:
-		process.join()
+#	for i in range(numProcess):
+#		processes += [ Process(target=pureGames, args=(seed, newN)) ]
+#		processes[i].start()
+#	for process in processes:
+#		process.join()
 	
-	scorefile = open("scores%s.csv" % (seed))
+	scorefile = open("scores%s.csv" % (seed), "r")
 	lines = scorefile.readlines()
 	scores = []
 	for line in lines:
